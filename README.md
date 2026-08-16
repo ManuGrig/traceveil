@@ -153,16 +153,71 @@ Measured results
 
 Testing was performed on the same Chrome/Windows system using EFF Cover Your Tracks.
 
-Metric	Without Traceveil	With Traceveil v1.4	Anonymity-set improvement
-HTTP Accept / language header	11.17 bits / 1 in 2,307.87	1.52 bits / 1 in 2.88	~801× more common
-Timezone	America/Toronto, 6.23 bits / 1 in 75.3	America/New_York, 3.18 bits / 1 in 9.07	~8.3× more common
-Screen	2752×1152×32, 11.80 bits / 1 in 3,554	1920×1080×24, 2.85 bits / 1 in 7.23	~492× more common
-Canvas	Fixed hash, 10.56 bits / 1 in 1,512	First-party randomized, 1.01 bits / 1 in 2.01	~752× more common
-WebGL fingerprint	Fixed hash, 14.12 bits / 1 in 17,770	First-party randomized, 1.12 bits / 1 in 2.18	~8,151× more common
-WebGL vendor & renderer	RTX 5070, 12.95 bits / 1 in 7,898	None, 7.28 bits / 1 in 155.88	~51× more common
-Audio	Fixed value, 2.92 bits / 1 in 7.59	First-party randomized, 1.52 bits / 1 in 2.88	~2.6× more common
-CPU cores	24, 7.09 bits / 1 in 136.49	8, 2.09 bits / 1 in 4.26	~32× more common
-Device memory	32 GB, 3.88 bits / 1 in 14.76	8 GB, 2.71 bits / 1 in 6.54	~2.3× more common
+<table width="700" data-start="180" data-end="1000">
+<tbody>
+<tr data-start="180" data-end="241">
+<td width="160">Metric</td>
+<td width="160">Without Traceveil</td>
+<td width="220">With Traceveil v1.4</td>
+<td width="100">Result</td>
+</tr>
+<tr data-start="260" data-end="378">
+<td data-start="260" data-end="296" data-col-size="sm">HTTP Accept / language header</td>
+<td data-col-size="sm" data-start="296" data-end="325">11.17 bits / 1 in 2,307.87</td>
+<td data-col-size="md" data-start="325" data-end="353">1.52 bits / 1 in 2.88</td>
+<td data-col-size="sm" data-start="353" data-end="378">~801× more common</td>
+</tr>
+<tr data-start="379" data-end="511">
+<td data-start="379" data-end="399" data-col-size="sm">Timezone name</td>
+<td data-col-size="sm" data-start="399" data-end="440">America/Toronto, 6.23 bits / 1 in 75.3</td>
+<td data-col-size="md" data-start="440" data-end="486">America/New_York, 3.18 bits / 1 in 9.07</td>
+<td data-col-size="sm" data-start="486" data-end="511">~8.3× more common</td>
+</tr>
+<tr data-start="512" data-end="632">
+<td data-start="512" data-end="525" data-col-size="sm">Screen</td>
+<td data-col-size="sm" data-start="525" data-end="565">2752×1152×32, 11.80 bits / 1 in 3,554</td>
+<td data-col-size="md" data-start="565" data-end="607">1920×1080×24, 2.85 bits / 1 in 7.23</td>
+<td data-col-size="sm" data-start="607" data-end="632">~492× more common</td>
+</tr>
+<tr data-start="633" data-end="771">
+<td data-start="633" data-end="646" data-col-size="sm">Canvas</td>
+<td data-start="646" data-end="684" data-col-size="sm">Fixed hash, 10.56 bits / 1 in 1,512</td>
+<td data-col-size="md" data-start="684" data-end="746">Randomized by first-party domain, 1.01 bits / 1 in 2.01</td>
+<td data-col-size="sm" data-start="746" data-end="771">~752× more common</td>
+</tr>
+<tr data-start="772" data-end="917">
+<td data-start="772" data-end="789" data-col-size="sm">WebGL hash</td>
+<td data-start="789" data-end="828" data-col-size="sm">Fixed hash, 14.12 bits / 1 in 17,770</td>
+<td data-col-size="md" data-start="828" data-end="890">Randomized by first-party domain, 1.12 bits / 1 in 2.18</td>
+<td data-col-size="sm" data-start="890" data-end="917">~8,151× more common</td>
+</tr>
+<tr data-start="918" data-end="1044">
+<td data-start="918" data-end="948" data-col-size="sm">WebGL vendor &amp; renderer</td>
+<td data-col-size="sm" data-start="948" data-end="984">RTX 5070, 12.95 bits / 1 in 7,898</td>
+<td data-col-size="md" data-start="984" data-end="1020">None, 7.28 bits / 1 in 155.88</td>
+<td data-col-size="sm" data-start="1020" data-end="1044">~51× more common</td>
+</tr>
+<tr data-start="1045" data-end="1181">
+<td data-start="1045" data-end="1057" data-col-size="sm">Audio</td>
+<td data-start="1057" data-end="1094" data-col-size="sm">Fixed value, 2.92 bits / 1 in 7.59</td>
+<td data-col-size="md" data-start="1094" data-end="1156">Randomized by first-party domain, 1.52 bits / 1 in 2.88</td>
+<td data-col-size="sm" data-start="1156" data-end="1181">~2.6× more common</td>
+</tr>
+<tr data-start="1182" data-end="1283">
+<td data-start="1182" data-end="1198" data-col-size="sm">CPU cores</td>
+<td data-col-size="sm" data-start="1198" data-end="1228">24, 7.09 bits / 1 in 136.49</td>
+<td data-col-size="md" data-start="1228" data-end="1259">8, 2.09 bits / 1 in 4.26</td>
+<td data-col-size="sm" data-start="1259" data-end="1283">~32× more common</td>
+</tr>
+<tr data-start="1284" data-end="1395">
+<td data-start="1284" data-end="1304" data-col-size="sm">Device memory</td>
+<td data-col-size="sm" data-start="1304" data-end="1336">32 GB, 3.88 bits / 1 in 14.76</td>
+<td data-col-size="md" data-start="1336" data-end="1370">8 GB, 2.71 bits / 1 in 6.54</td>
+<td data-col-size="sm" data-start="1370" data-end="1395">~2.3× more common</td>
+</tr>
+</tbody>
+</table>
+
 
 “More common” describes the observed anonymity-set change for that individual signal in EFF's tested population. It does not mean overall privacy improves by the same multiplier.
 
