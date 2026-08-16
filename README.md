@@ -1,112 +1,170 @@
-# traceveil
-Traceveil is a local-first Chrome extension that reduces browser fingerprint linkability by normalizing noisy signals and adding controlled canvas, WebGL, WebGPU, and audio interference. It includes lightweight tracker controls, no account, and no telemetry.
+<p align="center">
+  <img src="assets/traceveil-logo.png" alt="Traceveil logo" width="180">
+</p>
 
 # Traceveil
 
 ## Reduce what your browser reveals
 
-Traceveil is a privacy extension for Chrome that reduces browser fingerprinting and limits common tracking signals. It combines fingerprint normalization, controlled interference, lightweight tracker filtering, and browser privacy controls in one transparent, configurable extension.
+**v1.4.0** is the first stable release of the full v1.4 line: the complete v1.3.2 protection stack plus measured WebGL debug-renderer suppression, site-scoped synthetic extension farbling, WebGPU adapter-info scrubbing, UA-CH platform-persona consistency, and the redesigned Traceveil interface inspired by the Roamer Lens Guard visual system.
 
-Instead of pretending to make your browser invisible, Traceveil makes selected browser signals less reliable and less identifying while preserving enough functionality for ordinary websites to work. Protection is applied before page scripts run and operates across frames, helping prevent trackers from collecting the original high-entropy values first.
+Traceveil is a local-first Chrome privacy extension that reduces browser fingerprint linkability and limits common tracking signals. It combines browser-signal normalization, controlled first-party interference, GPU identity protection, lightweight tracker filtering, URL cleanup, and Chrome privacy controls in one configurable Manifest V3 extension.
 
-## Fingerprint protection
+Traceveil does not claim to make a browser anonymous. Its goal is to make selected high-entropy signals less useful for tracking while keeping related values coherent enough for normal websites to continue working.
 
-Modern tracking does not depend entirely on cookies. Websites can combine dozens of browser and hardware characteristics to recognize a device, including screen geometry, graphics hardware, processor count, memory, language, timezone, canvas rendering, WebGL output, WebGPU support, and audio processing.
+## What is new in 1.4
 
-Traceveil reduces the usefulness of these signals by presenting a more standardized browser profile and interfering with high-entropy rendering outputs.
+### Platform-persona coherence
 
-Protection includes:
+Traceveil's Balanced hardware profile reports a Windows-oriented persona. v1.4 closes a same-JavaScript-layer contradiction that could appear on macOS/Linux by keeping the modern low-entropy User-Agent Client Hints platform surface consistent with `navigator.platform`:
 
-- Canvas output perturbation
-- WebGL output protection and GPU identity suppression
+- `navigator.platform` → `Win32`
+- `navigator.userAgentData.platform` → `Windows`
+- `navigator.userAgentData.toJSON().platform` → `Windows`
+- Strict `getHighEntropyValues(["platformVersion"])` → `10.0.0`
+
+Disabling the Hardware module or excluding a site restores the native platform surfaces. Network-level User-Agent / Client Hint headers remain outside this JavaScript-layer normalization boundary and are documented as a limitation.
+
+### GPU identity protection
+
+Traceveil v1.4 keeps v1.3.2's first-party WebGL pixel interference and adds extension-surface farbling and WebGPU adapter scrubbing, and uses the renderer-identity strategy selected from measured population data.
+
+The alpha.5/alpha.6 hypothesis was that returning generic `WebKit` / `WebKit WebGL` strings would be less anomalous than an unavailable debug renderer. Cover Your Tracks measurements falsified that assumption on the test population: the generic pair measured 12.27 bits / about 1 in 4,955.56 browsers, while the earlier unavailable/`None` result measured 7.13 bits / about 1 in 139.77 browsers. v1.4 therefore uses renderer-extension suppression instead of inventing a generic Chrome renderer identity.
+
+When WebGL protection is enabled:
+
+- `getExtension("WEBGL_debug_renderer_info")` returns `null`.
+- `WEBGL_debug_renderer_info` is removed from `getSupportedExtensions()` so the advertised extension list remains coherent with `getExtension()`.
+- Hard-coded `UNMASKED_VENDOR_WEBGL` / `UNMASKED_RENDERER_WEBGL` enum probes are suppressed; the native method is invoked first so Chrome can preserve its normal error-state behavior.
+- `WEBGL_debug_shaders` remains suppressed.
+- One deterministic first-party synthetic extension is added to `getSupportedExtensions()`.
+- `getExtension()` returns a stable matching synthetic object for that extension.
+- WebGL `readPixels()` output continues to receive first-party-stable controlled interference.
+
+The synthetic extension uses the same deterministic first-party/mode seed already used by Traceveil. It does not introduce a per-install identifier, browser-global session secret, or per-navigation random value.
+
+When WebGPU protection is enabled, Traceveil preserves `navigator.gpu`. Where Chrome exposes `GPUAdapter.info` or `requestAdapterInfo()`, Traceveil returns a same-prototype scrubbed view with `vendor`, `architecture`, `device`, and `description` cleared while leaving non-sensitive adapter fields intact.
+
+This remains conceptually related to Brave's GPU-fingerprinting direction, but the architecture is different: Brave can implement protections inside Blink, while Traceveil must install MAIN-world JavaScript wrappers at `document_start`. Traceveil therefore does not claim browser-native equivalence.
+
+A full synthetic GPU persona is deliberately deferred. Spoofing an ANGLE renderer string without also matching shader limits, texture limits, extension support, framebuffer behavior, and rendering characteristics can create a more detectable contradiction than suppressing the debug renderer entirely.
+
+### Full Traceveil controls retained
+
+v1.4 is built directly on v1.3.2. The previous protection modules remain available:
+
+- Canvas and OffscreenCanvas output protection
+- WebGL output protection
 - WebGPU adapter protection
 - Audio fingerprint interference
 - CPU, memory, and platform normalization
-- Screen geometry and color-depth normalization
-- Language and timezone normalization
-- High-entropy User-Agent Client Hint reduction
-- Battery normalization in stricter protection modes
-- Optional experimental font-probing defenses
-- Basic resistance to scripts inspecting modified JavaScript functions
+- Screen geometry, color depth, and device-pixel-ratio normalization
+- Language normalization
+- DST-correct timezone normalization
+- High-entropy Client Hint reduction
+- Experimental font-probing protection in Strict mode
+- Battery normalization in Strict mode
+- WebRTC local-IP protection
+- Local third-party tracker blocking
+- Tracking-parameter removal
+- Privacy Sandbox controls
+- Strict-mode third-party cookie blocking
+- Strict-mode network prediction disabling
+- Balanced / Strict modes
+- Per-site exclusions
+- Strict-mode window standardization
 
-Traceveil does not randomly invent a completely different identity for every browser API. Its protections are designed to keep related values internally consistent and avoid obvious contradictions that could make the browser even more unusual.
+### Redesigned interface
+
+The popup now uses the Traceveil logo and a dark/cyan interface in the same visual family as Roamer Lens Guard. Controls are organized into Overview, Protection, Network, Sites, and About sections without removing the granular options from v1.3.2.
+
+The Overview page also performs a local current-tab WebGL check and reports whether debug-renderer suppression and the synthetic extension are active on the loaded page.
+
+## Install locally
+
+1. Extract the release ZIP.
+2. Open `chrome://extensions`.
+3. Enable **Developer mode**.
+4. Click **Load unpacked**.
+5. Select the extracted folder that directly contains `manifest.json`.
+6. Pin Traceveil if you want quick access to the popup.
+7. Reload already-open websites after changing protection settings.
+
+Do not run multiple Traceveil versions simultaneously; overlapping API wrappers make test results ambiguous.
 
 ## Balanced and Strict modes
 
-**Balanced mode** provides stable first-party fingerprint protection with a focus on compatibility. Canvas, WebGL, and audio interference remain consistent within each first-party domain, reducing cross-site correlation without causing values to fluctuate during normal page use.
+**Balanced** keeps the v1.3.2 compatibility-focused defaults. Canvas, WebGL, and audio interference are deterministic by first party and protection mode. Hardware, screen, language, and timezone values are normalized to a common Windows/Chrome-oriented profile.
 
-**Strict mode** adds stronger defenses for more privacy-sensitive browsing. It generates fresh private interference entropy for each navigation, applies denser rendering and audio perturbation, reduces additional Client Hints, normalizes battery information, blocks third-party cookies, disables network prediction, and can standardize the browser window.
+**Strict** increases perturbation density and activates additional protections such as high-entropy Client Hint reduction, optional font defenses, battery normalization, third-party cookie blocking, and network prediction disabling. Strict mode can also standardize the Chrome window to 1600 × 900.
 
-Strict mode may affect graphics applications, editors, authentication systems, video services, or websites that depend heavily on device detection. Individual sites can be excluded when compatibility is more important.
+Strict mode can break graphics-heavy sites, editors, authentication flows, media applications, or applications that depend on precise device capability detection. Use per-site exclusions when compatibility matters more.
 
 ## Tracker controls
 
-Traceveil includes lightweight local tracker controls for common advertising, analytics, attribution, session-replay, and fingerprinting infrastructure.
+Traceveil includes a bundled local tracker seed and browser-level request controls. There is no remote tracker-list download in this release.
 
-This local-only build does not download or bundle restricted third-party tracker datasets. Instead, it uses a small bundled local seed list and browser-level request controls to reduce common tracking channels while keeping the project simple to audit and suitable for unrestricted open-source publication.
+The network layer can:
 
-Tracker controls include:
+- block known third-party tracker domains;
+- block third-party `ping` requests and disable hyperlink auditing;
+- remove common tracking parameters such as `utm_*`, `gclid`, `fbclid`, and `msclkid` from top-level navigations;
+- reduce WebRTC local-IP exposure;
+- disable supported Privacy Sandbox APIs;
+- block third-party cookies in Strict mode;
+- disable network prediction in Strict mode.
 
-- Basic third-party tracker-domain blocking
-- Third-party ping and hyperlink-auditing protection
-- Removal of common tracking parameters such as `utm_*`, `gclid`, `fbclid`, and `msclkid`
-- WebRTC local-IP protection
-- Privacy Sandbox API controls
-- Strict-mode third-party cookie blocking
-- Per-site exceptions for compatibility
+Traceveil is not intended to replace a full ad blocker.
 
-Traceveil is not intended to replace a full ad blocker. Its primary purpose is fingerprint resistance and signal reduction. The tracker controls are a secondary layer designed to reduce common tracking paths without adding remote telemetry, account systems, or proprietary update services.
+## Privacy model
 
-## Clear, local controls
+Traceveil has:
 
-Traceveil gives you direct control over each protection category. You can enable or disable protection globally, exclude a specific website, switch between Balanced and Strict modes, and independently control fingerprint and network modules.
+- no account;
+- no telemetry;
+- no advertising system;
+- no behavioral profile;
+- no remote configuration service;
+- no per-install fingerprint seed;
+- no page-visible browser-session secret.
 
-No account is required. There is no cloud dashboard, behavioral profile, advertising system, or remote configuration service. Settings are stored locally in the browser.
+Settings are stored locally with `chrome.storage.local`. The tracker seed ships in the extension package.
 
-## Measurable protection
+## Testing
 
-In comparative Cover Your Tracks testing, Traceveil substantially reduced the identifying value of several high-entropy browser signals. Canvas, WebGL, and audio results were reported as randomized by first-party domain, while exposed screen, timezone, language, processor, memory, and GPU characteristics became significantly more common than the original hardware profile.
+Run the dependency-free validation suite:
 
-A browser may still be reported as unique because fingerprint tests combine many attributes and are limited by the size of their datasets. The important measurement is not only the headline result, but how much identifying information each protected signal continues to reveal.
+```bash
+npm test
+```
 
-Traceveil is designed to reduce linkability. It does not promise anonymity.
+It validates package/version consistency, service-worker registration and rule generation, old v1.3.2 protections, the new WebGL/WebGPU behavior, popup coverage of every configured module, duplicate GPU-pool consistency, and the SHA-256 source manifest.
+
+For optional real-Chrome verification:
+
+```bash
+npm install
+npm run verify
+```
+
+See [RELEASE_TESTING.md](RELEASE_TESTING.md) for real-user verification instructions, including BrowserLeaks A/B testing and compatibility reports.
 
 ## Honest limitations
 
-Traceveil improves tracking resistance, but it does not make a browser anonymous.
+Traceveil improves resistance to several browser-level tracking techniques, but it does not:
 
-It does not:
+- hide or change your public IP address;
+- replace a VPN or anonymity network;
+- control TLS, JA3/JA4, HTTP/2, HTTP/3, QUIC, DNS, or OS network-stack fingerprints;
+- create isolated browser identities or profiles;
+- prevent every form of first-party tracking;
+- guarantee that MAIN-world wrappers are impossible to detect;
+- normalize every WebGL/WebGPU capability limit or every rendered GPU behavior;
+- cover every worker/worklet execution path from an extension;
+- guarantee anonymity or uniqueness-test success.
 
-- Hide or change your public IP address
-- Replace a VPN or anonymity network
-- Control TLS, JA3, JA4, HTTP/2, HTTP/3, QUIC, DNS, or network-stack fingerprints
-- Create isolated browser profiles
-- Prevent every form of first-party tracking
-- Guarantee that modified APIs are undetectable
-- Defeat every current or future fingerprinting technique
+See [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) for the detailed v1.4 threat and compatibility boundary.
 
-For stronger identity separation, use dedicated Chrome profiles or separate browser installations alongside appropriate network-level privacy tools.
+## License
 
-## Privacy without pretending to be invisible
-
-Traceveil is designed to reduce linkability, suppress unusually revealing hardware characteristics, and make browser fingerprints less reliable while remaining honest about the limits of a Chrome extension.
-
-It does not make you disappear.
-
-It gives websites less dependable information to work with.
-
-## Direct comparison
-
-Test done with [Cover Your Tracks](https://coveryourtracks.eff.org/).
-
-| Metric | Without extension | With extension | Result |
-|---|---:|---:|---:|
-| HTTP Accept / language header | 11.17 bits / 1 in 2,307.87 | 1.49 bits / 1 in 2.81 | ~821× more common |
-| Timezone name | America/Toronto, 6.23 bits / 1 in 75.3 | America/New_York, 3.60 bits / 1 in 12.1 | ~6.2× more common |
-| Screen | 2752×1152×32, 11.80 bits / 1 in 3,554 | 1920×1080×24, 3.43 bits / 1 in 10.79 | ~329× more common |
-| Canvas | fixed hash, 10.56 bits / 1 in 1,512 | randomized by first party | ~768× more common |
-| WebGL hash | fixed hash, 14.12 bits / 1 in 17,770 | randomized by first party | ~7,969× more common |
-| WebGL renderer | RTX 5070, 12.95 bits / 1 in 7,898 | None, 7.13 bits / 1 in 139.77 | ~56× more common |
-| Audio | fixed value, 2.92 bits / 1 in 7.59 | randomized by first party | ~2.8× more common |
-| CPU cores | 24, 7.09 bits / 1 in 136.49 | 8, 2.08 bits / 1 in 4.24 | ~32× more common |
-| Device memory | 32 GB, 3.88 bits / 1 in 14.76 | 8 GB, 2.61 bits / 1 in 6.12 | ~2.4× more common |
+Traceveil is released under the [Zero-Clause BSD license](LICENSE). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for bundled-data and artwork notices.
